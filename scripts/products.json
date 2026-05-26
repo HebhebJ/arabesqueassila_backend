@@ -1,0 +1,166 @@
+{
+  "products": [
+    {
+      "name": "Bssissa Amande",
+      "category": "bssissa",
+      "photoFolder": "bsisa",
+      "description": "Céréales torréfiées et amandes finement moulues, un délice énergétique préparé selon une recette de famille.",
+      "featured": true,
+      "variants": [
+        { "weight": "250g", "price": 13, "sku": "BSS-AMD-250" },
+        { "weight": "500g", "price": 22, "sku": "BSS-AMD-500" },
+        { "weight": "1kg", "price": 38, "sku": "BSS-AMD-1000" }
+      ]
+    },
+    {
+      "name": "Bssissa Noix",
+      "category": "bssissa",
+      "photoFolder": "bsisa",
+      "description": "Noix concassées et épices, un classique revisité avec amour.",
+      "variants": [
+        { "weight": "250g", "price": 13, "sku": "BSS-NX-250" },
+        { "weight": "500g", "price": 21, "sku": "BSS-NX-500" },
+        { "weight": "1kg", "price": 36, "sku": "BSS-NX-1000" }
+      ]
+    },
+    {
+      "name": "Bssissa Pistache",
+      "category": "bssissa",
+      "photoFolder": "bsisa",
+      "description": "La finesse de la pistache dans une pâte savoureuse et onctueuse.",
+      "variants": [
+        { "weight": "250g", "price": 15, "sku": "BSS-PST-250" },
+        { "weight": "500g", "price": 24, "sku": "BSS-PST-500" },
+        { "weight": "1kg", "price": 42, "sku": "BSS-PST-1000" }
+      ]
+    },
+    {
+      "name": "Bssissa Noisette",
+      "category": "bssissa",
+      "photoFolder": "bsisa",
+      "description": "Noisettes torréfiées et céréales pour une saveur délicate et réconfortante.",
+      "variants": [
+        { "weight": "250g", "price": 13, "sku": "BSS-NS-250" },
+        { "weight": "500g", "price": 22, "sku": "BSS-NS-500" },
+        { "weight": "1kg", "price": 38, "sku": "BSS-NS-1000" }
+      ]
+    },
+    {
+      "name": "Bssissa Chocolat",
+      "category": "bssissa",
+      "photoFolder": "bsisa",
+      "description": "Le mariage du cacao et des céréales torréfiées pour une gourmandise unique.",
+      "variants": [
+        { "weight": "250g", "price": 12, "sku": "BSS-CH-250" },
+        { "weight": "500g", "price": 20, "sku": "BSS-CH-500" },
+        { "weight": "1kg", "price": 35, "sku": "BSS-CH-1000" }
+      ]
+    },
+    {
+      "name": "Bssissa Trio",
+      "category": "bssissa",
+      "photoFolder": "bsisa",
+      "description": "Mélange de trois saveurs de bssissa pour découvrir toute la gamme.",
+      "variants": [
+        { "weight": "250g", "price": 14, "sku": "BSS-TR-250" },
+        { "weight": "500g", "price": 23, "sku": "BSS-TR-500" },
+        { "weight": "1kg", "price": 39, "sku": "BSS-TR-1000" }
+      ]
+    },
+    {
+      "name": "Bssissa Multi-Fekia",
+      "category": "bssissa",
+      "photoFolder": "bsisa",
+      "description": "Mélange premium de fruits secs variés pour une expérience riche en saveurs.",
+      "variants": [
+        { "weight": "250g", "price": 14, "sku": "BSS-MF-250" },
+        { "weight": "500g", "price": 23, "sku": "BSS-MF-500" },
+        { "weight": "1kg", "price": 40, "sku": "BSS-MF-1000" }
+      ]
+    },
+    {
+      "name": "Zrir Traditionnel",
+      "category": "zrir",
+      "photoFolder": "zrir",
+      "description": "Pâte traditionnelle aux noisettes, miel et beurre, préparée à l'ancienne.",
+      "featured": true,
+      "variants": [
+        { "weight": "250g", "price": 20, "sku": "ZR-250" },
+        { "weight": "500g", "price": 34, "sku": "ZR-500" },
+        { "weight": "1kg", "price": 58, "sku": "ZR-1000" }
+      ]
+    },
+    {
+      "name": "Baklawa Amande",
+      "category": "hlou",
+      "photoFolder": "ba9lewa",
+      "description": "Feuilles de brick croustillantes, amandes et sirop de miel parfumé à l'eau de rose.",
+      "variants": [
+        { "weight": "250g", "price": 21, "sku": "BKL-AMD-250" },
+        { "weight": "500g", "price": 35, "sku": "BKL-AMD-500" },
+        { "weight": "1kg", "price": 60, "sku": "BKL-AMD-1000" }
+      ]
+    },
+    {
+      "name": "Samsa",
+      "category": "hlou",
+      "photoFolder": "7lou",
+      "description": "Samsa traditionnelle aux amandes, enveloppée dans une pâte fine et croustillante.",
+      "variants": [
+        { "weight": "250g", "price": 19, "sku": "SMS-250" },
+        { "weight": "500g", "price": 32, "sku": "SMS-500" },
+        { "weight": "1kg", "price": 55, "sku": "SMS-1000" }
+      ]
+    },
+    {
+      "name": "Kâak Warka",
+      "category": "hlou",
+      "photoFolder": "7lou",
+      "description": "Biscuits traditionnels en forme de fleur, croquants et parfumés à l'eau de rose.",
+      "variants": [
+        { "weight": "250g", "price": 17, "sku": "KW-250" },
+        { "weight": "500g", "price": 28, "sku": "KW-500" },
+        { "weight": "1kg", "price": 48, "sku": "KW-1000" }
+      ]
+    },
+    {
+      "name": "Kounefa",
+      "category": "hlou",
+      "photoFolder": "kounefa",
+      "description": "Cheveux d'ange croustillants garnis de crème et de pistaches.",
+      "variants": [
+        { "weight": "4 personnes", "price": 35, "sku": "KNF-4" },
+        { "weight": "6 personnes", "price": 50, "sku": "KNF-6" }
+      ]
+    },
+    {
+      "name": "Gâteau Personnalisé",
+      "category": "gâteaux",
+      "photoFolder": "a la une",
+      "description": "Gâteau d'anniversaire sur mesure, décoré à la main selon vos envies.",
+      "featured": true,
+      "variants": [
+        { "weight": "6-8 personnes", "price": 90, "sku": "GT-6-8" },
+        { "weight": "10-12 personnes", "price": 130, "sku": "GT-10-12" }
+      ]
+    },
+    {
+      "name": "Coffret Découverte",
+      "category": "coffrets",
+      "photoFolder": "a la une",
+      "description": "Coffret cadeau composé de 3 pots de 250g de bssissa aux saveurs variées. Idéal pour offrir.",
+      "variants": [
+        { "weight": "3 × 250g", "price": 25, "sku": "COF-DEC-750" }
+      ]
+    },
+    {
+      "name": "Coffret Prestige",
+      "category": "coffrets",
+      "photoFolder": "a la une",
+      "description": "Coffret premium avec sélection de nos meilleures pâtisseries traditionnelles.",
+      "variants": [
+        { "weight": "Assortiment", "price": 55, "sku": "COF-PRS-001" }
+      ]
+    }
+  ]
+}
