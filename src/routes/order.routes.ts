@@ -1,11 +1,31 @@
 import { Router } from 'express';
 import { z } from 'zod';
+import rateLimit from 'express-rate-limit';
 import { prisma } from '../services/prisma';
 import type { Prisma } from '@prisma/client';
 import { authenticate } from '../middleware/auth';
 import { validateBody } from '../middleware/validate';
+import { serialize } from '../utils/serialize';
+import { cache } from '../utils/cache';
 
 const router = Router();
+
+const orderCreateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (_req, res) => {
+    res.status(429).json({ success: false, error: { code: 'RATE_LIMIT', message: 'Too many orders, please try again later' } });
+  },
+});
+
+const trackLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Generate a professional order reference: ARB-XXXXXX
 async function generateOrderRef(tx: Prisma.TransactionClient, maxRetries = 10): Promise<string> {
@@ -31,7 +51,7 @@ const createOrderSchema = z.object({
 });
 
 // Public: create order
-router.post('/', validateBody(createOrderSchema), async (req, res) => {
+router.post('/', orderCreateLimiter, validateBody(createOrderSchema), async (req, res) => {
   const { customerName, phone, address, deliveryZone, notes, items } = req.body;
 
   const order = await prisma.$transaction(async (tx) => {
@@ -85,11 +105,11 @@ router.post('/', validateBody(createOrderSchema), async (req, res) => {
     return order;
   });
 
-  res.status(201).json({ success: true, data: order });
+  res.status(201).json({ success: true, data: serialize(order) });
 });
 
 // Public: track order by orderNumber
-router.get('/:orderNumber/track', async (req, res) => {
+router.get('/:orderNumber/track', trackLimiter, async (req, res) => {
   const orderNumber = req.params.orderNumber;
   if (!orderNumber || orderNumber.length < 3) {
     res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Invalid order reference' } });
@@ -97,7 +117,7 @@ router.get('/:orderNumber/track', async (req, res) => {
   }
 
   const order = await prisma.order.findUnique({
-    where: { orderNumber },
+    where: { orderNumber: orderNumber as string },
     select: {
       orderNumber: true,
       status: true,
@@ -119,7 +139,7 @@ router.get('/:orderNumber/track', async (req, res) => {
     return;
   }
 
-  res.json({ success: true, data: order });
+  res.json({ success: true, data: serialize(order) });
 });
 
 // Admin: list all orders
@@ -152,8 +172,38 @@ router.get('/admin/list', authenticate, async (req, res) => {
   res.json({
     success: true,
     data: {
-      orders,
+      orders: serialize(orders),
       meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    },
+  });
+});
+
+// Admin: dashboard stats
+router.get('/admin/stats', authenticate, async (_req, res) => {
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+
+  const [pendingCount, todayCount, todayRevenueAgg] = await Promise.all([
+    prisma.order.count({ where: { status: 'PENDING' } }),
+    prisma.order.count({
+      where: { createdAt: { gte: todayStart, lt: todayEnd } },
+    }),
+    prisma.order.aggregate({
+      where: {
+        status: { not: 'CANCELLED' },
+        createdAt: { gte: todayStart, lt: todayEnd },
+      },
+      _sum: { total: true },
+    }),
+  ]);
+
+  res.json({
+    success: true,
+    data: {
+      pendingCount,
+      todayCount,
+      todayRevenue: Number(todayRevenueAgg._sum.total ?? 0),
     },
   });
 });
@@ -177,7 +227,7 @@ router.get('/admin/:id', authenticate, async (req, res) => {
     return;
   }
 
-  res.json({ success: true, data: order });
+  res.json({ success: true, data: serialize(order) });
 });
 
 // Admin: update status
@@ -191,7 +241,7 @@ router.patch('/admin/:id/status', authenticate, validateBody(updateStatusSchema)
     data: { status: req.body.status },
   });
 
-  res.json({ success: true, data: order });
+  res.json({ success: true, data: serialize(order) });
 });
 
 export default router;

@@ -1,16 +1,130 @@
 import { Router } from 'express';
+import { z } from 'zod';
 import { prisma } from '../services/prisma';
+import { authenticate } from '../middleware/auth';
+import { validateBody } from '../middleware/validate';
+import { serialize } from '../utils/serialize';
+import { cache } from '../utils/cache';
 
 const router = Router();
 
 router.get('/', async (_req, res) => {
+  const cached = cache.get<unknown>('categories:all');
+  if (cached) {
+    res.json({ success: true, data: cached });
+    return;
+  }
   const categories = await prisma.category.findMany({
     orderBy: { sortOrder: 'asc' },
   });
-  res.json({ success: true, data: categories });
+  const data = serialize(categories);
+  cache.set('categories:all', data, 1000 * 60 * 10);
+  res.json({ success: true, data });
+});
+
+const createCategorySchema = z.object({
+  name: z.string().min(2).max(100),
+  slug: z.string().min(2).max(100),
+  description: z.string().max(500).optional(),
+  image: z.string().url().optional(),
+});
+
+router.post('/', authenticate, validateBody(createCategorySchema), async (req, res) => {
+  const existing = await prisma.category.findUnique({ where: { slug: req.body.slug } });
+  if (existing) {
+    res.status(409).json({ success: false, error: { code: 'DUPLICATE_SLUG', message: 'Une catégorie avec ce slug existe déjà' } });
+    return;
+  }
+  const category = await prisma.category.create({ data: req.body });
+  cache.delete('categories:all');
+  res.status(201).json({ success: true, data: serialize(category) });
+});
+
+// Admin: list categories with product counts
+router.get('/admin/list', authenticate, async (_req, res) => {
+  const categories = await prisma.category.findMany({
+    orderBy: { sortOrder: 'asc' },
+    include: {
+      _count: { select: { products: true } },
+    },
+  });
+  const data = categories.map((c) => ({
+    ...c,
+    productCount: c._count.products,
+  }));
+  res.json({ success: true, data: serialize(data) });
+});
+
+const updateCategorySchema = z.object({
+  name: z.string().min(2).max(100).optional(),
+  slug: z.string().min(2).max(100).optional(),
+  description: z.string().max(500).optional().or(z.literal('')),
+  image: z.string().url().optional().or(z.literal('')),
+  sortOrder: z.number().int().optional(),
+});
+
+router.patch('/:id', authenticate, validateBody(updateCategorySchema), async (req, res) => {
+  const { id } = req.params;
+  const data = req.body;
+  if (data.slug) {
+    const existing = await prisma.category.findFirst({
+      where: { slug: data.slug, NOT: { id } },
+    });
+    if (existing) {
+      res.status(409).json({ success: false, error: { code: 'DUPLICATE_SLUG', message: 'Ce slug est déjà utilisé' } });
+      return;
+    }
+  }
+  const category = await prisma.category.update({
+    where: { id },
+    data: {
+      ...data,
+      image: data.image || null,
+      description: data.description || null,
+    },
+  });
+  cache.delete('categories:all');
+  cache.store.forEach((_, key) => {
+    if (key.startsWith('category:')) cache.delete(key);
+  });
+  res.json({ success: true, data: serialize(category) });
+});
+
+router.delete('/:id', authenticate, async (req, res) => {
+  const { id } = req.params;
+  const category = await prisma.category.findUnique({
+    where: { id },
+    include: { _count: { select: { products: true } } },
+  });
+  if (!category) {
+    res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Catégorie introuvable' } });
+    return;
+  }
+  if (category._count.products > 0) {
+    res.status(409).json({
+      success: false,
+      error: {
+        code: 'HAS_PRODUCTS',
+        message: `Cette catégorie contient ${category._count.products} produit(s). Supprimez-les d'abord.`,
+      },
+    });
+    return;
+  }
+  await prisma.category.delete({ where: { id } });
+  cache.delete('categories:all');
+  cache.store.forEach((_, key) => {
+    if (key.startsWith('category:')) cache.delete(key);
+  });
+  res.json({ success: true, data: { message: 'Catégorie supprimée' } });
 });
 
 router.get('/:slug', async (req, res) => {
+  const cacheKey = `category:${req.params.slug}`;
+  const cached = cache.get<unknown>(cacheKey);
+  if (cached) {
+    res.json({ success: true, data: cached });
+    return;
+  }
   const category = await prisma.category.findUnique({
     where: { slug: req.params.slug },
     include: {
@@ -31,7 +145,9 @@ router.get('/:slug', async (req, res) => {
     return;
   }
 
-  res.json({ success: true, data: category });
+  const data = serialize(category);
+  cache.set(cacheKey, data, 1000 * 60 * 5);
+  res.json({ success: true, data });
 });
 
 export default router;

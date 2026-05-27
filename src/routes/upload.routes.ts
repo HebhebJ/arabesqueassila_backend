@@ -1,9 +1,17 @@
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import multer from 'multer';
 import cloudinary from '../utils/cloudinary';
 import { authenticate } from '../middleware/auth';
 
 const router = Router();
+
+const uploadLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -38,7 +46,7 @@ router.get('/images', authenticate, async (_req, res) => {
   }
 });
 
-router.post('/', authenticate, upload.single('image'), async (req, res) => {
+router.post('/', authenticate, uploadLimiter, upload.single('image'), async (req, res) => {
   if (!req.file) {
     res.status(400).json({ success: false, error: { code: 'NO_FILE', message: 'No image provided' } });
     return;
