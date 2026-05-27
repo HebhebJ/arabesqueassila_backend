@@ -123,11 +123,9 @@ router.post('/', authenticate, validateBody(createProductSchema), async (req, re
 
   // Invalidate all related caches
   cache.delete('categories:all');
-  cache.store.forEach((_, key) => {
-    if (key.startsWith('products:list:') || key.startsWith('product:') || key.startsWith('category:')) {
-      cache.delete(key);
-    }
-  });
+  cache.clearPrefix('products:list:');
+  cache.clearPrefix('product:');
+  cache.clearPrefix('category:');
   res.status(201).json({ success: true, data: serialize(product) });
 });
 
@@ -172,11 +170,9 @@ router.patch('/:id', authenticate, validateBody(updateProductSchema), async (req
 
   // Invalidate all related caches
   cache.delete('categories:all');
-  cache.store.forEach((_, key) => {
-    if (key.startsWith('products:list:') || key.startsWith('product:') || key.startsWith('category:')) {
-      cache.delete(key);
-    }
-  });
+  cache.clearPrefix('products:list:');
+  cache.clearPrefix('product:');
+  cache.clearPrefix('category:');
   res.json({ success: true, data: serialize(product) });
 });
 
@@ -203,11 +199,9 @@ router.delete('/:id', authenticate, async (req, res) => {
   });
   // Invalidate all related caches
   cache.delete('categories:all');
-  cache.store.forEach((_, key) => {
-    if (key.startsWith('products:list:') || key.startsWith('product:') || key.startsWith('category:')) {
-      cache.delete(key);
-    }
-  });
+  cache.clearPrefix('products:list:');
+  cache.clearPrefix('product:');
+  cache.clearPrefix('category:');
   res.json({ success: true, data: { message: 'Product deleted' } });
 });
 

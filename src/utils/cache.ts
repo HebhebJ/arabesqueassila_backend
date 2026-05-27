@@ -27,6 +27,14 @@ class Cache {
   clear(): void {
     this.store.clear();
   }
+
+  clearPrefix(prefix: string): void {
+    this.store.forEach((_, key) => {
+      if (key.startsWith(prefix)) {
+        this.store.delete(key);
+      }
+    });
+  }
 }
 
 export const cache = new Cache();

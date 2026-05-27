@@ -44,13 +44,15 @@ router.post('/', authenticate, validateBody(createCategorySchema), async (req, r
 router.get('/admin/list', authenticate, async (_req, res) => {
   const categories = await prisma.category.findMany({
     orderBy: { sortOrder: 'asc' },
-    include: {
-      _count: { select: { products: true } },
-    },
   });
+  const productCounts = await prisma.product.groupBy({
+    by: ['categoryId'],
+    _count: { id: true },
+  });
+  const countMap = new Map(productCounts.map((p) => [p.categoryId, p._count.id]));
   const data = categories.map((c) => ({
     ...c,
-    productCount: c._count.products,
+    productCount: countMap.get(c.id) || 0,
   }));
   res.json({ success: true, data: serialize(data) });
 });
@@ -64,7 +66,7 @@ const updateCategorySchema = z.object({
 });
 
 router.patch('/:id', authenticate, validateBody(updateCategorySchema), async (req, res) => {
-  const { id } = req.params;
+  const id = req.params.id as string;
   const data = req.body;
   if (data.slug) {
     const existing = await prisma.category.findFirst({
@@ -84,37 +86,33 @@ router.patch('/:id', authenticate, validateBody(updateCategorySchema), async (re
     },
   });
   cache.delete('categories:all');
-  cache.store.forEach((_, key) => {
-    if (key.startsWith('category:')) cache.delete(key);
-  });
+  cache.clearPrefix('category:');
   res.json({ success: true, data: serialize(category) });
 });
 
 router.delete('/:id', authenticate, async (req, res) => {
-  const { id } = req.params;
+  const id = req.params.id as string;
   const category = await prisma.category.findUnique({
     where: { id },
-    include: { _count: { select: { products: true } } },
   });
   if (!category) {
     res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Catégorie introuvable' } });
     return;
   }
-  if (category._count.products > 0) {
+  const productCount = await prisma.product.count({ where: { categoryId: id } });
+  if (productCount > 0) {
     res.status(409).json({
       success: false,
       error: {
         code: 'HAS_PRODUCTS',
-        message: `Cette catégorie contient ${category._count.products} produit(s). Supprimez-les d'abord.`,
+        message: `Cette catégorie contient ${productCount} produit(s). Supprimez-les d'abord.`,
       },
     });
     return;
   }
   await prisma.category.delete({ where: { id } });
   cache.delete('categories:all');
-  cache.store.forEach((_, key) => {
-    if (key.startsWith('category:')) cache.delete(key);
-  });
+  cache.clearPrefix('category:');
   res.json({ success: true, data: { message: 'Catégorie supprimée' } });
 });
 
