@@ -37,8 +37,8 @@ router.post('/login', loginLimiter, validateBody(loginSchema), async (req, res) 
   const isDev = env.NODE_ENV === 'development';
   res.cookie('token', token, {
     httpOnly: true,
-    secure: !isDev,
-    sameSite: isDev ? 'lax' : 'strict',
+    secure: true,
+    sameSite: 'none',
     maxAge: 24 * 60 * 60 * 1000,
     path: '/',
   });
@@ -47,7 +47,11 @@ router.post('/login', loginLimiter, validateBody(loginSchema), async (req, res) 
 });
 
 router.post('/logout', (_req, res) => {
-  res.clearCookie('token', { path: '/' });
+  res.clearCookie('token', {
+    path: '/',
+    secure: true,
+    sameSite: 'none',
+  });
   res.json({ success: true, data: { message: 'Logged out' } });
 });
 
