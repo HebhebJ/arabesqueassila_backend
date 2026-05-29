@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
 
 export function authenticate(req: Request, res: Response, next: NextFunction) {
-  const token = req.cookies?.token;
+  const token = req.cookies?.token || req.headers.authorization?.replace('Bearer ', '');
 
   if (!token) {
     res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } });

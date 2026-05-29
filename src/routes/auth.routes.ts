@@ -34,7 +34,6 @@ router.post('/login', loginLimiter, validateBody(loginSchema), async (req, res) 
 
   const token = jwt.sign({ admin: true }, env.JWT_SECRET, { expiresIn: '24h' });
 
-  const isDev = env.NODE_ENV === 'development';
   res.cookie('token', token, {
     httpOnly: true,
     secure: true,
@@ -43,7 +42,7 @@ router.post('/login', loginLimiter, validateBody(loginSchema), async (req, res) 
     path: '/',
   });
 
-  res.json({ success: true, data: { message: 'Logged in' } });
+  res.json({ success: true, data: { token, message: 'Logged in' } });
 });
 
 router.post('/logout', (_req, res) => {
